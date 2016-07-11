@@ -1,7 +1,7 @@
 Project Overview
 ================
 
-I will implement of a tree visualization algorithm in Javascript that will render an aesthetically pleasing 2-D tree on a webpage. This component will be utilized in a production, closed-source, web application. The only inputs to the algorithm will be a list of nodes, each with the following information:
+I will implement of a tree visualization algorithm in Javascript that will render an aesthetically pleasing 2-D tree on a webpage. This component will be utilized in a production, closed-source, web application. The implementation will be released under the Apache 2.0 Open Source Software License in this Git Repository. The only inputs to the algorithm will be a list of nodes, each with the following information:
 * Node ID
 * Parent Node ID (null if node is root)
 * Title Text
