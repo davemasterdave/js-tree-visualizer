@@ -1,0 +1,9 @@
+body {
+    background: #333;
+    color: #fff;
+}
+#holder {
+    height: 100%;
+    margin-top: 53px;
+    width: 100%;
+}

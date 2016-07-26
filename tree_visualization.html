@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Tree Visualization Demo</title>
+
+    <!--Basic styling of top nav bar-->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Ej0hUpn6wbrOTJtRExp8jvboBagaz+Or6E9zzWT+gHCQuuZQQVZUcbmhXQzSG17s" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/designmodo/Flat-UI/2.3.0/dist/css/flat-ui.min.css"
+          type="text/css">
+    <!--Basic styling-->
+    <link rel="stylesheet" href="vendor/style.css" type="text/css" media="screen">
+
+</head>
+<body>
+<!-- Static navbar -->
+<div id="nav" class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+            <a class="navbar-brand hidden-sm hidden-md" href="#">Tree Visualization Demo</a>
+        </div>
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav" id="demo-links">
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="active"><a id="display-status"></a></li>
+            </ul>
+        </div><!--/.nav-collapse -->
+    </div>
+</div>
+<div id="holder"></div>
+
+<!--CUSTOM WEB FONT, TOP NAV BAR DISPLAY-->
+<script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script type="application/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="application/javascript"
+        src="https://cdn.rawgit.com/designmodo/Flat-UI/2.3.0/dist/js/flat-ui.min.js"></script>
+<script type="application/javascript">$.noConflict();</script>
+
+<!--SVG RENDERING DEPENDENCIES-->
+<script type="application/javascript" src="vendor/raphael.js"></script>
+<script type="application/javascript" src="vendor/raphael-zpd.js"></script>
+<script type="application/javascript" src="vendor/pollyfills.js"></script>
+
+<!--APPLICATION LIBRARY-->
+<script type="application/javascript" src="tree/treeVisual.js"></script>
+<!--APPLICATION LIBRARY DEMO-->
+<script type="application/javascript" src="tree/treeVisualTest.js"></script>
+<!--APPLICATION LIBRARY DEMO DRIVER-->
+<script type="application/javascript">
+    var DEBUG = false;
+
+    if (!DEBUG) {
+        console.log = function () {
+        };
+    }
+
+    var statusLabel = jQuery('#display-status');
+    var demoLinks = jQuery('#demo-links');
+
+    function setStatus(message) {
+        statusLabel.html(message);
+    }
+
+    function displayRenderTime(totalTime, nodes) {
+        setStatus("Render took " + Math.round10((totalTime), -1) + "ms (" + Math.round10(totalTime / nodes, -1) + "ms/node)");
+    }
+
+    setStatus('loading fonts and initializing...');
+
+    // Bootstrap once dom has load
+    const buildTreeRunner = function () {
+        [denseTreeData, simpleTreeData, fullTreeData].forEach(function (dataFactory) {
+            const factoryName = dataFactory.name;
+            const factoryLink = factoryName + "Link";
+            var link = jQuery("<li><a id=\"" + factoryLink + "\" href=\"#" + factoryName + "\">" + factoryName + "</a></li>");
+            demoLinks.append(link);
+            jQuery("#" + factoryLink).click(function (e) {
+                buildTree(dataFactory);
+                e.preventDefault();
+            });
+            jQuery(document).ready(function () {
+                setStatus('completed initialization');
+            });
+        });
+    };
+
+    // Fires bootstrap once custom font has been loaded. Tries to load for 2 seconds before timing out.
+    WebFont.load({
+        google: {
+            families: ['Open Sans:400,700']
+        },
+        active: buildTreeRunner,
+        inactive: buildTreeRunner,
+        timeout: 2000
+    });
+
+    const visualizer = new TreeVisualizer();
+
+    // ************************************ Driver *********************************
+    function buildTree(dataFactory) {
+        setStatus("Setting up for render");
+        const rawData = dataFactory();
+        visualizer.unRenderTree();
+        visualizer.buildTree(rawData).then(function () {
+            visualizer.tree.debugPrintNodes();
+
+            setStatus("Rendering...");
+            const preRender = performance.now();
+            visualizer.render();
+            displayRenderTime(performance.now() - preRender, rawData.length);
+
+            if(DEBUG) renderLayoutBounding(visualizer);
+
+            jQuery(window).on(RESIZE_DONE_EVENT_KEY, function () {
+                visualizer.updateScreenInfo();
+                if(DEBUG) renderLayoutBounding(visualizer);
+            });
+        });
+    }
+</script>
+
+</body>
+</html>
